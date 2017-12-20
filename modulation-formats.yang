@@ -1,0 +1,85 @@
+module modulation-formats {
+  namespace "http://sssup.it/modulation-formats";
+  prefix mdfrms;
+
+  organization
+    "Scuola Superiore Sant'Anna Network and Services Laboratory";
+
+  contact
+    " Editor: Matteo Dallaglio
+              <mailto:m.dallaglio@sssup.it>";
+
+  description
+    " This module contains a YANG definitions for different modulation formats.";
+
+  revision 2015-09-15 {
+    description "Initial Revision.";
+    reference 
+      "None";
+  }
+
+  identity modulation-format {
+      description "Base for all modulation formats";
+  }
+
+  identity ook {
+      base modulation-format;
+      description "On Off Keying";
+  }
+
+  identity bpsk {
+      base modulation-format;
+      description "Binary Phase-Shift Keying";
+  }
+
+  identity dc-dp-bpsk {
+      base modulation-format;
+      description "DC bias Dual Polarization Binary Phase-Shift Keying";
+  }
+
+  identity qpsk {
+      base modulation-format;
+      description "Quadrature Phase-Shift Keying";
+  }
+
+  identity pm-qpsk {
+      base modulation-format;
+      description "Dual Polarization Quadrature Phase-Shift Keying";
+  }
+
+  identity qam8 {
+      base modulation-format;
+      description "Quadrature Amplitude Modulation with constellation of 8";
+  }
+
+  identity pm-8qam {
+      base modulation-format;
+      description "Dual Polarization Quadrature Amplitude Modulation with constellation of 16";
+  }
+
+  identity qam16 {
+      base modulation-format;
+      description "Quadrature Amplitude Modulation with constellation of 16";
+  }
+
+  identity pm-16qam {
+      base modulation-format;
+      description "Dual Polarization Quadrature Amplitude Modulation with constellation of 16";
+  }
+
+  identity pm-32qam {
+      base modulation-format;
+      description "Dual Polarization Quadrature Amplitude Modulation with constellation of 16";
+  }
+
+  identity pm-64qam {
+      base modulation-format;
+      description "Dual Polarization Quadrature Amplitude Modulation with constellation of 16";
+  }
+
+  identity dp-dc-qam16 {
+      base modulation-format;
+      description "DC bias Dual Polarization Quadrature Amplitude Modulation with constellation of 16";
+  }
+
+}

@@ -1,0 +1,44 @@
+module fec-types {
+  namespace "http://sssup.it/fec-types";
+  prefix fec;
+
+  organization
+    "Scuola Superiore Sant'Anna Network and Services Laboratory";
+
+  contact
+    " Editor: Matteo Dallaglio
+              <mailto:m.dallaglio@sssup.it>";
+
+  description
+    " This module contains a YANG definitions for different forward error correction(FEC) techniques.";
+
+  revision 2015-09-15 {
+    description "Initial Revision.";
+    reference 
+      "None";
+  }
+
+  identity fec-type {
+      description "Base for all FEC types";
+    }
+
+  identity reed-solomon {
+      base fec-type;
+      description "Reed–Solomon error-correcting code";
+  }
+
+  identity hamming-code {
+      base fec-type;
+      description "Hamming linear error-correcting code";
+  }
+
+  identity golay {
+      base fec-type;
+      description "Golay linear error-correcting code";
+  }
+
+  identity ldpc {
+      base fec-type;
+      description "Low-Density Parity-Check linear error correcting Code";
+  }
+}

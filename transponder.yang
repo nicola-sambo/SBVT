@@ -1,0 +1,681 @@
+module transponder {
+  namespace "http://sssup.it/transponder";
+  prefix tran;
+
+  import modulation-formats {
+    prefix mdfrms;
+  }
+
+  import fec-types {
+    prefix fec;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  import ietf-inet-types { 
+    prefix inet;
+  }
+
+  import tailf-common {
+    prefix tailf;
+  }
+
+  organization
+    "Scuola Superiore Sant'Anna Network and Services Laboratory";
+
+  contact
+    " Editor: Matteo Dallaglio
+              <mailto:m.dallaglio@sssup.it>
+
+      Editor: Nicola Sambo
+              <mailto:n.sambo@sssup.it>
+    ";
+
+  description
+    "This module contains a YANG definitions for configuring Optical Transponder.";
+
+  revision 2015-09-15 {
+    description "Initial Revision.";
+    reference 
+      "RFC xxxx: A YANG data model for the description of Optical Transponder ";
+  }
+  
+  typedef transmission-type {
+    description "The transmission method";
+    type enumeration {
+      enum NWDM;
+      enum O-OFDM;
+      enum TFP;//Time-frequency packing
+    }        
+  }
+ 
+  typedef direction-type {
+    description "Indicates the direction";
+    type enumeration {
+      enum TX;
+      enum RX;
+    }
+  }
+
+  typedef bit-rate-type {
+    type decimal64 {
+      fraction-digits 3;
+      range "0..max";
+    }
+    units "Gb/s";
+  }
+
+  typedef baud-rate-type {
+    type decimal64 {
+      fraction-digits 3;
+      range "0..max";
+    }
+    units "Gbaud";
+  }
+
+  typedef modulation-type {
+    type identityref {
+      base mdfrms:modulation-format;
+    }
+  }
+
+  typedef fec-type {
+    type identityref {
+      base fec:fec-type;
+    }
+  }
+
+  typedef frequency-ghz-type {
+    type decimal64 {
+      fraction-digits 8;
+      range "0..max";
+    }
+    units "GHz";
+  }
+
+
+  grouping fec-config {
+    description "Configuration data for forward error correction";
+
+    container fec-in-use {
+      description "FEC in use";
+      presence "Enables FEC";
+
+      leaf name {
+        type fec-type;
+      }
+      
+      container rate {
+        description 
+        "The code rate is given by message-length/block-length";
+        leaf message-length {
+          type int16 {
+            range "1..max";
+          }
+        }
+        leaf block-length {
+          type int16 {
+            range "1..max";
+          }
+        }
+        must "block-length >= message-length" {
+            error-message "block-length must be greater or equal to message-length";
+        }
+      }//container rate
+
+    }//container fec-in-use
+
+  }//grouping fec-config
+
+  grouping fec-state {
+    description "Operational state data for forward error correction";
+    container supported-fec {
+      description "List of supported FEC schemes";
+      leaf-list fec {
+        type fec-type;
+      }
+    }//supported
+  }//grouping fec-state
+
+
+
+  grouping transmitter-config {
+    description "Configuration data for the transmitter";
+    leaf output-power {
+      description "launch power at the transmitter";
+      type decimal64 {
+        fraction-digits 3;
+        range "0..max";
+      }
+      units "dBm";
+    }
+  }//grouping transmitter-config
+
+  grouping transmitter-state {
+    description "Operational state data for the transmitter";
+  }
+
+
+
+  grouping receiver-config {
+    description "Configuration data for the receiver";
+
+    leaf local-oscillator {
+      type frequency-ghz-type;
+    }
+
+    leaf sampling-rate {
+      description "Minimum hardware requirements in terms of sampling rate";
+      type decimal64 {
+        fraction-digits 3;
+        range "0..max";
+      }
+      units "GS/s";
+    }
+
+    leaf analog-bw {
+      description "Minimum hardware requirements in terms of analog bandwidth";
+      type frequency-ghz-type;
+    }
+    
+
+  }//grouping receiver-config
+
+  grouping receiver-state {
+    description "Operational state data for the receiver";
+
+    leaf input-power {
+      description "per-channel received optical power at the receiver";
+      type decimal64 {
+        fraction-digits 3;
+        range "0..max";
+      }
+      units "dBm";
+    }
+
+    leaf pre-fec-ber {
+      description
+      "Pre-FEC Bit Error Rate.";
+      type decimal64 {
+        fraction-digits 18;
+        range "0..max";
+      }
+    }
+
+    leaf osnr {
+      description
+      "Optical Signal to Noise Ratio.";
+      type decimal64 {
+        fraction-digits 5;
+      }
+      units "dB";
+    }
+
+    leaf snr {
+      description
+      "Optical Signal to Noise Ratio.";
+      type decimal64 {
+        fraction-digits 5;
+      }
+      units "dB";
+    }
+
+    leaf sample-variance {
+      type decimal64 {
+        fraction-digits 18;
+        range "0..max";
+      }
+      reference 
+        "http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=7035536";
+    }
+
+    leaf pmd {
+      description
+      "Polarization Mode Dispersion.";
+      type decimal64 {
+        fraction-digits 8;
+        range "0..max";
+      }
+      units "ps/(km)^0.5";
+    }
+
+    leaf cd {
+      description
+      "Chromatic Dispersion.";
+      type decimal64 {
+        fraction-digits 5;
+      }
+      units "ps/nm/km";
+    }
+
+    leaf q-factor{
+      type decimal64 {
+        fraction-digits 5;
+      }
+      units "dB";
+    }
+
+
+  }//grouping receiver-state
+
+
+
+  grouping subcarrier-module-config {
+    description "Configuration data for the optical subcarrier-module";
+
+    leaf direction {
+      description "Defines whether the subcarrier is received or transmitted";
+      type direction-type;
+    }
+
+    leaf bit-rate {
+      description "The bit-rate in use";
+      type bit-rate-type;
+    }
+
+    leaf baud-rate {
+      description "The baud-rate in use";
+      type baud-rate-type;
+    }
+
+    leaf modulation {
+      description "Modulation format in use";
+      type modulation-type;
+    }
+
+  
+    uses fec-config;
+    
+    leaf central-frequency {
+      description 
+        "The central frequency of the subcarrier.";
+      type frequency-ghz-type;
+    }
+
+    leaf bandwidth {
+      description 
+        "The bandwidth occupied.";
+      type frequency-ghz-type;
+    }
+  }//subcarrier-module-config
+
+
+  grouping subcarrier-module-state {
+    description "Operational state data for the optical subcarrier-module";
+    container supported-bit-rates{
+      description "List of supported bit-rates"; 
+      leaf-list bit-rate {
+        description "the bit rate value";
+        type bit-rate-type;
+      }
+    }
+
+    container supported-baud-rates {
+      description "List of supported baud-rates";
+      leaf-list baud-rate {
+        description "the baud rate value";
+        type baud-rate-type;
+      }
+    }
+
+    container supported-modulations {
+      description "List of supported modulation formats";
+      leaf-list modulation {
+        description "Name of the supported modulation";
+        type modulation-type;
+      }
+    }
+
+    uses fec-state;
+  }//subcarrier-module-state
+
+
+
+
+  grouping subcarrier-module {
+    description "Top-level grouping for optical subcarrier-module";
+
+    container config {
+      description
+        "Configuration data for subcarrier-module";
+      uses subcarrier-module-config;
+
+      container transmitter {
+        when "../direction = 'TX'";
+        uses transmitter-config;
+      }
+
+      container receiver {
+        when "../direction = 'RX'";
+        uses receiver-config;
+      }
+    }
+
+    container state {
+      //config false;
+      description
+        "Operational state data for subcarrier-module";
+      uses subcarrier-module-config;
+      uses subcarrier-module-state;
+
+      container transmitter {
+        when "../direction = 'TX'";
+        uses transmitter-config;
+        uses transmitter-state;
+      }
+
+      container receiver {
+        when "../direction = 'RX'";
+        uses receiver-config;
+        uses receiver-state;
+      }
+    } 
+    
+  }//subcarrier-module
+
+
+  grouping connection-config {
+    description "Configuration data for a connection";
+    leaf connection-id{
+      type uint32;
+    }
+
+    leaf transmission-scheme {
+      description "The scheme adopted for the transmission";
+      type transmission-type;
+    }
+
+    list subcarrier {
+      description "List of ids of the involved subcarriers";
+      key "subcarrier-id";
+      leaf subcarrier-id {
+        type leafref {
+          path "/tran:transponder/tran:subcarrier-module/tran:subcarrier-id";
+        }
+      }
+    }
+
+    container frequency-slot {
+      description
+        "The frequency range allocated to a slot
+        within the flexible grid and unavailable to other slots.  A
+        frequency slot is defined by its nominal central frequency and its
+        slot width.";
+      reference "draft-ietf-ccamp-flexi-grid-fwk-07";
+
+      leaf nominal-central-frequency-granularity {
+        description 
+          "It is the spacing between allowed nominal central frequencies.";
+        type frequency-ghz-type;
+        default 6.25;
+      }//leaf nominal-central-frequency-granularity
+
+      leaf slot-width-granularity {
+        description "It is the minimum slot width.";
+        type frequency-ghz-type;
+        default 12.5;
+      }//leaf slot-width-granularity
+
+      leaf n {
+        description
+          "n gives the nominal central frequency (ncf) using the following formula: 
+          ncf = 193.1THz + n x nominal-central-frequency-granularity[THz].";
+        type int16;
+        mandatory true;
+      }//leaf n
+
+      leaf m {
+        description
+          "m gives the slot width. A slot width is constrained to be 
+          m x slot-width-granularity";
+        type int16 {
+          range "1..max";
+        }
+        mandatory true;
+      }//leaf m
+    }//container frequency-slot
+
+    leaf source-address {
+      description "The IP address of the source node"; 
+      type inet:ip-address;
+    }//leaf source-address
+    
+    leaf destination-address {
+      description "The IP address of the destination node"; 
+      type inet:ip-address;
+    }//leaf source-address
+    
+  }//grouping connection-config
+
+
+  grouping connection-state {
+    description "Operational state data for a connection";
+  }//grouping connection-state
+
+
+  grouping connections {
+    description "List of all connections served by the transponder";
+    list connection {
+      key "connection-id";
+      leaf connection-id {
+        description "references the configured connection-id";
+        type leafref {
+          path "../config/connection-id";
+        }
+      }
+      container config {
+        description "Configuration parameters for connection";
+        uses connection-config;
+      }
+
+      container state {
+        //config false;
+        description "State variables for connection";
+        uses connection-config;
+        uses connection-state;
+      }
+    }//list connection
+  }//grouping connections
+
+
+
+
+
+
+  //---------- MAIN TREE ------------//
+  container transponder {
+      
+      leaf transponder-id {
+        type uint64;
+        description "ID of the transponder.";
+      }
+
+      leaf slice-ability-support {
+        when "count(../subcarrier-module) > 1";
+        type boolean;
+        //config false;
+        description "Determines if the transponder is slice-able.";
+      }
+
+
+      list subcarrier-module {
+        description 
+          "List of all the subcarrier modules installed in the transponder";
+        key "subcarrier-id";
+        leaf subcarrier-id {
+          type uint32;
+        }
+        uses subcarrier-module;
+      }
+
+
+      leaf node-id {
+        description "ID of the node where the transponder is installed";
+        type uint16;
+      }
+
+      leaf add-drop-id {
+        description "Add/drop ID inside the node";
+        type uint16;
+      }
+
+      container connections {
+        //TODO: does the transponder really need to have a list of all the connections??
+        // shouldn't be treated by protocols at higher layers?
+        uses connections;
+      }
+  }
+
+
+
+  //------------- RPCs ----------------//
+  rpc outage-record {
+    tailf:actionpoint outage-record;
+    description
+      "This RPC allows to enable or disable the outage recording 
+       of a specific connection.";
+    input {
+      leaf connection-id{
+        description
+          "The identifier of the connection involved";
+        type leafref {
+          path "/tran:transponder/tran:connections/tran:connection/tran:connection-id";
+        }
+        mandatory true;
+      }
+
+      leaf enable {
+        description
+          "True to enable recording, False to disable it";
+        type boolean;
+        mandatory true;
+      }
+
+      leaf ber-threshold {
+        description
+          "The pre-fec BER value above which the connection
+          is in outage";
+        type decimal64 {
+          fraction-digits 18;
+          range "0..max";
+        }
+        mandatory true;
+      }
+    }
+  }
+
+  //------------- NOTIFICATIONS ----------------//
+  notification pre-fec-ber-change {
+    leaf subcarrier-module-id {
+      description
+        "An existing subcarrier-module in the list";
+      type leafref {
+        path "/tran:transponder/tran:subcarrier-module/tran:subcarrier-id";
+      }
+      mandatory true;
+    }
+    leaf transponder-id {
+        type uint64;
+        mandatory true;
+    }
+    leaf pre-fec-ber {
+      type decimal64 {
+        fraction-digits 18;
+        range "0..max";
+      }
+      mandatory true;
+    }
+  }
+
+  notification pmd-change {
+    leaf subcarrier-module-id {
+      description
+        "An existing subcarrier-module in the list";
+      type leafref {
+        path "/tran:transponder/tran:subcarrier-module/tran:subcarrier-id";
+      }
+      mandatory true;
+    }
+    leaf pmd {
+      type leafref {
+        path "/transponder/subcarrier-module[subcarrier-id=current()/../subcarrier-module-id]/state/receiver/pmd";
+      }
+      mandatory true;
+    }
+  }
+
+
+  notification bit-rate-change {
+    leaf subcarrier-module-id {
+      description
+        "An existing subcarrier-module in the list";
+      type leafref {
+        path "/tran:transponder/tran:subcarrier-module/tran:subcarrier-id";
+      }
+      mandatory true;
+    }
+    leaf bit-rate {
+      type leafref {
+        path "/transponder/subcarrier-module[subcarrier-id=current()/../subcarrier-module-id]/state/bit-rate";
+      }
+      mandatory true;
+    }
+  }
+
+  notification connection-outage {
+    leaf connection-id {
+      description
+        "The identifier of the connection in outage";
+      type leafref {
+        path "/tran:transponder/tran:connections/tran:connection/tran:connection-id";
+      }
+      mandatory true;
+    }
+
+    leaf begin-instant {
+      description
+        "The time instant when the outage begun.";
+      type yang:date-and-time;
+      mandatory true;
+    }
+
+    leaf end-instant {
+      description
+        "The time instant when the outage ended";
+      type yang:date-and-time;
+      mandatory true;
+    }
+
+    leaf ber-threshold {
+      description
+        "The pre-fec BER value above which the connection
+        was considered in outage";
+      type decimal64 {
+        fraction-digits 18;
+        range "0..max";
+      }
+      mandatory true;
+    }
+  }
+
+  notification database-change {
+    description
+      "Generated when the internal state of the server 
+      (operational state data) changes";
+
+    leaf change {
+      description
+        "The effective change.";
+      type string;
+    }
+    leaf date-time {
+      description
+        "The date and time when the change occured.";
+      type yang:date-and-time;
+    }
+  }  // notification netconf-state-change
+
+}//module transponder
+  
